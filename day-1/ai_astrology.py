@@ -5,7 +5,8 @@ from rich.console import Console
 
 def main():
     today = date.today().strftime('%A, %d-%m-%Y')
-    LLM = "qwen3:4b"
+    #LLM = "qwen3-vl:4b-thinking"
+    LLM = "qwen3-vl:4b-instruct"
 
     # Allow specifying remote Ollama server
     ollama_host = input("Enter Ollama server URL (press Enter for localhost): ").strip()
@@ -30,13 +31,26 @@ def main():
         options=Options( temperature=0.8, num_ctx=4096, top_p=0.95, top_k=40, num_predict=-1 ))
 
     console = Console()
-
-    if hasattr(response.message, 'thinking') and response.message.thinking:
-        console.print(f"[bold blue]🤔 Maude's Thinking Process:[/bold blue]\n[dim]{response.message.thinking}[/dim]")
-        console.print("\n" + "=" * 50 + "\n")
-
-    console.print("[bold magenta]✨ Your Horoscope:[/bold magenta]")
-    console.print(response.message.content)
+    
+    thinking_started = False
+    content_started = False
+    
+    for chunk in response:
+        if hasattr(chunk.message, 'thinking') and chunk.message.thinking:
+            if not thinking_started:
+                console.print("[bold blue]🤔 Maude's Thinking Process:[/bold blue]")
+                thinking_started = True
+            console.print(f"[dim]{chunk.message.thinking}[/dim]", end='')
+        
+        if hasattr(chunk.message, 'content') and chunk.message.content:
+            if not content_started:
+                if thinking_started:
+                    console.print("\n" + "=" * 50 + "\n")
+                console.print("[bold magenta]✨ Your Horoscope:[/bold magenta]")
+                content_started = True
+            console.print(chunk.message.content, end='')
+    
+    console.print()  # Add a newline at the end
 
 if __name__ == "__main__":
     main()

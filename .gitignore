@@ -2,8 +2,10 @@
 node_modules/
 .pnpm-store/
 venv/
+.venv/
 package-lock.json
 yarn.lock
+uv.lock
 
 # Build outputs
 dist/

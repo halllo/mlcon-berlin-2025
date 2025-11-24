@@ -9,10 +9,10 @@ public class GettingStartedOllama {
         try {
             HttpClient client = HttpClient.newHttpClient();
 
-            String jsonString = "{\"model\":\"qwen3\",\"prompt\":\"Hello\",\"stream\":false,\"Think\":false}";
+            String jsonString = "{\"model\":\"qwen3-vl:4b-instruct\",\"prompt\":\"Hello\",\"stream\":false,\"Think\":false}";
 
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:11434/api/generate"))
+                .uri(URI.create("http://host.containers.internal:11434/api/generate"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonString))
                 .build();
