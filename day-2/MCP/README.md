@@ -31,6 +31,17 @@ The MCP server implementation that provides two tools:
 - Structured JSON responses
 - Type-safe tool definitions with input schemas
 
+**Claude Desktop Intergration**
+
+```json
+"mlcon2025mcpdemo": {
+   "command": "/Users/manuelnaujoks/Projects/mlcon-berlin-2025/.venv/bin/python",
+   "args": [
+      "/Users/manuelnaujoks/Projects/mlcon-berlin-2025/day-2/MCP/mcp_server.py"
+   ]
+}
+```
+
 ### 2. `test_mcp_client_ollama.py`
 A demonstration client that uses the MCP server with a local Ollama LLM (instead of commercial APIs like Claude).
 

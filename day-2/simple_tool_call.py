@@ -19,6 +19,7 @@ OLLAMA_URL = "http://localhost:11434/api/chat"
 
 # Model that supports tool calling - must be a vision-language model that supports tools
 MODEL = "qwen3-vl:4b-instruct"
+#MODEL = "gemma3n:e4b"
 
 
 def convert_currency(amount, from_currency, to_currency):
@@ -113,18 +114,34 @@ def chat_with_tools(user_message):
     messages = [{"role": "user", "content": user_message}]
 
     # First API call: Send user message + available tools
-    response = requests.post(
-        OLLAMA_URL,
-        json={
-            "model": MODEL,
-            "messages": messages,
-            "tools": tools,  # Inform LLM about available functions
-            "stream": False  # Get complete response at once
-        }
-    )
+    try:
+        response = requests.post(
+            OLLAMA_URL,
+            json={
+                "model": MODEL,
+                "messages": messages,
+                "tools": tools,  # Inform LLM about available functions
+                "stream": False  # Get complete response at once
+            }
+        )
+        response.raise_for_status()  # Raise exception for HTTP errors (4xx, 5xx)
+    except requests.exceptions.HTTPError as e:
+        print(f"ERROR: HTTP {response.status_code} - {e}")
+        print(f"Response content: {response.text}")
+        return
+    except requests.exceptions.RequestException as e:
+        print(f"ERROR: Failed to connect to Ollama: {e}")
+        print("Make sure Ollama is running: ollama serve")
+        return
 
     # Extract the assistant's response
-    assistant_message = response.json().get("message", {})
+    try:
+        assistant_message = response.json().get("message", {})
+    except json.JSONDecodeError:
+        print(f"ERROR: Invalid JSON response from Ollama")
+        print(f"Response text: {response.text}")
+        return
+    
     tool_calls = assistant_message.get("tool_calls", [])
 
     # Check if LLM wants to call any tools
@@ -145,14 +162,22 @@ def chat_with_tools(user_message):
 
             # Route to the appropriate function
             # In a larger system, you'd use a dictionary or registry pattern
-            if function_name == "convert_currency":
-                result = convert_currency(
-                    amount=function_args["amount"],
-                    from_currency=function_args["from_currency"],
-                    to_currency=function_args["to_currency"]
-                )
-
-                print(f"Result: {result['result_text']}\n")
+            try:
+                if function_name == "convert_currency":
+                    result = convert_currency(
+                        amount=function_args["amount"],
+                        from_currency=function_args["from_currency"],
+                        to_currency=function_args["to_currency"]
+                    )
+                    print(f"Result: {result['result_text']}\n")
+                else:
+                    # Unknown function requested
+                    result = {"error": f"Unknown function: {function_name}"}
+                    print(f"ERROR: Unknown function requested: {function_name}\n")
+            except (KeyError, TypeError) as e:
+                # Handle missing or invalid function arguments
+                result = {"error": f"Invalid arguments: {e}"}
+                print(f"ERROR: Failed to execute {function_name}: {e}\n")
 
                 # Add tool result to conversation history
                 # The LLM needs this to formulate its final response
@@ -163,18 +188,31 @@ def chat_with_tools(user_message):
 
         # Second API call: Send conversation including tool results
         # The LLM will now incorporate the tool results into a natural language response
-        final_response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": MODEL,
-                "messages": messages,  # Full history: user → assistant → tool results
-                "stream": False
-            }
-        )
+        try:
+            final_response = requests.post(
+                OLLAMA_URL,
+                json={
+                    "model": MODEL,
+                    "messages": messages,  # Full history: user → assistant → tool results
+                    "stream": False
+                }
+            )
+            final_response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            print(f"ERROR: HTTP {final_response.status_code} - {e}")
+            print(f"Response content: {final_response.text}")
+            return
+        except requests.exceptions.RequestException as e:
+            print(f"ERROR: Failed to get final response: {e}")
+            return
 
         # Extract and display the final response
-        final_message = final_response.json().get("message", {}).get("content", "")
-        print(f"ASSISTANT: {final_message}\n")
+        try:
+            final_message = final_response.json().get("message", {}).get("content", "")
+            print(f"ASSISTANT: {final_message}\n")
+        except json.JSONDecodeError:
+            print(f"ERROR: Invalid JSON in final response")
+            return
 
     else:
         # No tool calls needed - LLM responded directly
