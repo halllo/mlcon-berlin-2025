@@ -374,7 +374,7 @@ def main() -> None:
     # Load the document to be searched
     # This is the knowledge base for our RAG system
     try:
-        with open("Kinder-und-Hausmärchen-der-Gebrüder-Grimm.txt", "r", encoding="utf8") as f:
+        with open("./day-2/Kinder-und-Hausmärchen-der-Gebrüder-Grimm.txt", "r", encoding="utf8") as f:
             text = f.read()
         print(f"Loaded document: {len(text):,} characters")
     except FileNotFoundError:
