@@ -23,7 +23,7 @@ from PIL import Image, ImageDraw, ImageFont
 # CONFIGURATION - Edit these values
 # ============================================================================
 MODELS = ["qwen3-vl:4b-instruct", "deepseek-ocr"]
-IMAGE_PATH = "data/RTS1UI9-1024x659.jpg"
+IMAGE_PATH = "./day-2/data/RTS1UI9-1024x659.jpg"
 
 # ============================================================================
 # Core Functions
