@@ -48,6 +48,7 @@ PREREQUISITES:
 import os
 import pandas as pd
 import kagglehub
+from analyse_sentiment_01 import analyse_sentiment
 
 def load_kaggle_data(data):
     """
@@ -179,3 +180,17 @@ if __name__ == "__main__":
     print("4. Calculate percentages: tweets_df['sentiment'].value_counts(normalize=True)")
     print("\nWARNING: Processing thousands of tweets with LLM will take time!")
     print("Consider processing a sample first: tweets_df.head(100)")
+
+    # Iterate through the first 2 rows of the DataFrame
+    # Use iterrows() to get both index and row data
+    for index, row in tweets_df.head(2).iterrows():
+        # Access the 'content' column from the row
+        text = row['content']
+        
+        # Analyze sentiment using our LLM-based function
+        sentiment = analyse_sentiment(text)
+        
+        # Display results in a clear, formatted way
+        print(f"Text: '{text}'")
+        print(f"Sentiment: {sentiment}")
+        print("-" * 50)  # Visual separator for readability

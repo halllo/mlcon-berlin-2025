@@ -63,7 +63,8 @@ class OllamaClient:
     def generate_response(self, prompt: str) -> str:
         """Generate text response from Ollama API."""
         data = {
-            "model": "gemma3n:e4b",
+            #"model": "gemma3n:e4b",
+            "model": "qwen3-vl:4b-instruct",
             "messages": [{"role": "user", "content": prompt}],
             "stream": False,
             "options": {
@@ -559,7 +560,7 @@ def main():
 
     try:
         # Initialize RAG system with default settings
-        rag = GenericRAG("data/alice_in_wonderland.txt")
+        rag = GenericRAG("./day-2/data/alice_in_wonderland.txt")
         print()
 
         # Demo questions - specific, detail-oriented questions that demonstrate RAG retrieval
